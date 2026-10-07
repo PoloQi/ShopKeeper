@@ -29,10 +29,11 @@ public class UserController {
     public Result<PageResult<SysUser>> page(
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String realName,
+            @RequestParam(required = false) Integer role,
             @RequestParam(required = false) Integer status,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return Result.ok(userService.page(username, realName, status, page, size));
+        return Result.ok(userService.page(username, realName, role, status, page, size));
     }
 
     @PostMapping

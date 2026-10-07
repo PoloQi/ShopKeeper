@@ -12,10 +12,12 @@ public interface SysUserMapper {
 
     long count(@Param("username") String username,
                @Param("realName") String realName,
+               @Param("role") Integer role,
                @Param("status") Integer status);
 
     List<SysUser> selectPage(@Param("username") String username,
                              @Param("realName") String realName,
+                             @Param("role") Integer role,
                              @Param("status") Integer status,
                              @Param("offset") int offset,
                              @Param("size") int size);
