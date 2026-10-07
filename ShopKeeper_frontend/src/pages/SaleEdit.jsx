@@ -50,6 +50,8 @@ export default function SaleEdit() {
   const [loading, setLoading] = useState(hasNo)
   const [saving, setSaving] = useState(false)
   const [auditing, setAuditing] = useState(false)
+  // 单据审核状态（'0' 未审核 / '1' 已审核）；null 表示未加载或加载失败
+  const [docStatus, setDocStatus] = useState(null)
   const [customers, setCustomers] = useState([])
   const [products, setProducts] = useState([])
   const [items, setItems] = useState(() => [newRow()])
@@ -77,7 +79,9 @@ export default function SaleEdit() {
             discount: it.discount
           }))
         )
+        setDocStatus(d.status)
       })
+      .catch(() => message.error('单据加载失败'))
       .finally(() => setLoading(false))
   }, [hasNo, soNo, form])
 
@@ -318,7 +322,7 @@ export default function SaleEdit() {
               保存单据
             </Button>
           )}
-          {mode === 'audit' && authUser?.role === 1 && (
+          {mode === 'audit' && authUser?.role === 1 && docStatus === '0' && (
             <Button type="primary" loading={auditing} onClick={handleAudit}>
               审核通过
             </Button>

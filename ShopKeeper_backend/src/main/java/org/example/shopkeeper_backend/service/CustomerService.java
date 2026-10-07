@@ -35,6 +35,7 @@ public class CustomerService {
 
     /** 新增：自动生成 KH+4位流水 编号，返回编号 */
     public String add(Customer customer) {
+        customer.setPhone(PhoneValidator.normalize(customer.getPhone()));
         PhoneValidator.check(customer.getPhone());
         String maxId = customerMapper.selectMaxId();
         int seq = maxId == null ? 1 : Integer.parseInt(maxId.substring(2)) + 1;
@@ -44,6 +45,7 @@ public class CustomerService {
     }
 
     public void update(Customer customer) {
+        customer.setPhone(PhoneValidator.normalize(customer.getPhone()));
         PhoneValidator.check(customer.getPhone());
         customerMapper.update(customer);
     }

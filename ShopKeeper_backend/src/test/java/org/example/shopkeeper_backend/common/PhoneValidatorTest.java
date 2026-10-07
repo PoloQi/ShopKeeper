@@ -3,6 +3,8 @@ package org.example.shopkeeper_backend.common;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PhoneValidatorTest {
@@ -29,6 +31,15 @@ class PhoneValidatorTest {
     @Test
     void surroundingSpacesAreStripped() {
         assertDoesNotThrow(() -> PhoneValidator.check("  13800138000 "));
+    }
+
+    @Test
+    void normalizeStripsAndNullsBlank() {
+        assertNull(PhoneValidator.normalize(null));
+        assertNull(PhoneValidator.normalize(""));
+        assertNull(PhoneValidator.normalize("   "));
+        assertEquals("13800138000", PhoneValidator.normalize("  13800138000 "));
+        assertEquals("020-12345678", PhoneValidator.normalize("020-12345678"));
     }
 
     @Test

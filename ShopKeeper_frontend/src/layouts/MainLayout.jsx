@@ -57,15 +57,6 @@ export default function MainLayout() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // 店员看不到用户管理
-  const visibleMenuItems = menuItems.map((item) => {
-    if (!item.children) return item
-    const children = item.children.filter(
-      (child) => child.key !== '/user' || user.role === 1
-    )
-    return { ...item, children }
-  })
-
   if (loading) {
     return (
       <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -74,6 +65,15 @@ export default function MainLayout() {
     )
   }
   if (!user) return <Navigate to="/login" replace />
+
+  // 店员看不到用户管理（须放在 user 守卫之后，避免首屏 user 为 null 时崩溃）
+  const visibleMenuItems = menuItems.map((item) => {
+    if (!item.children) return item
+    const children = item.children.filter(
+      (child) => child.key !== '/user' || user.role === 1
+    )
+    return { ...item, children }
+  })
 
   // 列表页与编辑页都高亮对应菜单
   const matchKey =

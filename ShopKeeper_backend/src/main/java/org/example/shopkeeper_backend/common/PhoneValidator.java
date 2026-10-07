@@ -22,4 +22,15 @@ public final class PhoneValidator {
             throw new BusinessException("联系电话格式不正确，请输入11位手机号或带区号的固话");
         }
     }
+
+    /**
+     * 落库前归一：去首尾空格；空串/空白归为 null（字段可空，表示不填）
+     */
+    public static String normalize(String phone) {
+        if (phone == null) {
+            return null;
+        }
+        String stripped = phone.strip();
+        return stripped.isEmpty() ? null : stripped;
+    }
 }

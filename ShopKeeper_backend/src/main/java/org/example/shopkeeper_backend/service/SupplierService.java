@@ -35,6 +35,7 @@ public class SupplierService {
 
     /** 新增：自动生成 GYS+3位流水 编号，返回编号 */
     public String add(Supplier supplier) {
+        supplier.setPhone(PhoneValidator.normalize(supplier.getPhone()));
         PhoneValidator.check(supplier.getPhone());
         String maxId = supplierMapper.selectMaxId();
         int seq = maxId == null ? 1 : Integer.parseInt(maxId.substring(3)) + 1;
@@ -44,6 +45,7 @@ public class SupplierService {
     }
 
     public void update(Supplier supplier) {
+        supplier.setPhone(PhoneValidator.normalize(supplier.getPhone()));
         PhoneValidator.check(supplier.getPhone());
         supplierMapper.update(supplier);
     }

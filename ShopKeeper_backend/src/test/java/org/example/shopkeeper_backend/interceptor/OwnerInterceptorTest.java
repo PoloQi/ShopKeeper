@@ -2,6 +2,7 @@ package org.example.shopkeeper_backend.interceptor;
 
 import org.example.shopkeeper_backend.common.OwnerOnly;
 import org.example.shopkeeper_backend.entity.SysUser;
+import org.example.shopkeeper_backend.mapper.SysUserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -11,6 +12,8 @@ import org.springframework.web.method.HandlerMethod;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class OwnerInterceptorTest {
 
@@ -29,13 +32,15 @@ class OwnerInterceptorTest {
         }
     }
 
+    private SysUserMapper sysUserMapper;
     private OwnerInterceptor interceptor;
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
 
     @BeforeEach
     void setUp() {
-        interceptor = new OwnerInterceptor();
+        sysUserMapper = mock(SysUserMapper.class);
+        interceptor = new OwnerInterceptor(sysUserMapper);
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
     }
@@ -44,10 +49,21 @@ class OwnerInterceptorTest {
         return new HandlerMethod(bean, bean.getClass().getMethod(method));
     }
 
-    private void loginWithRole(Integer role) {
-        SysUser user = new SysUser();
-        user.setRole(role);
-        request.getSession().setAttribute(LoginInterceptor.SESSION_USER, user);
+    /** 模拟已登录会话：携带 userId 与登录时的旧 role（当前角色以数据库为准） */
+    private void login(Long userId, Integer sessionRole) {
+        SysUser sessionUser = new SysUser();
+        sessionUser.setUserId(userId);
+        sessionUser.setRole(sessionRole);
+        request.getSession().setAttribute(LoginInterceptor.SESSION_USER, sessionUser);
+    }
+
+    /** 模拟数据库中该用户当前的角色与状态 */
+    private void dbUser(Long userId, Integer role, Integer status) {
+        SysUser dbUser = new SysUser();
+        dbUser.setUserId(userId);
+        dbUser.setRole(role);
+        dbUser.setStatus(status);
+        when(sysUserMapper.selectById(userId)).thenReturn(dbUser);
     }
 
     @Test
@@ -64,14 +80,16 @@ class OwnerInterceptorTest {
 
     @Test
     void ownerPassesMethodLevel() throws Exception {
-        loginWithRole(1);
+        login(1L, 1);
+        dbUser(1L, 1, 1);
         PlainApi bean = new PlainApi();
         assertTrue(interceptor.preHandle(request, response, handler(bean, "methodLevelProtected")));
     }
 
     @Test
     void clerkBlockedMethodLevel() throws Exception {
-        loginWithRole(0);
+        login(2L, 0);
+        dbUser(2L, 0, 1);
         PlainApi bean = new PlainApi();
         assertFalse(interceptor.preHandle(request, response, handler(bean, "methodLevelProtected")));
         assertEquals(403, response.getStatus());
@@ -79,7 +97,8 @@ class OwnerInterceptorTest {
 
     @Test
     void clerkBlockedClassLevel() throws Exception {
-        loginWithRole(0);
+        login(2L, 0);
+        dbUser(2L, 0, 1);
         ProtectedApi bean = new ProtectedApi();
         assertFalse(interceptor.preHandle(request, response, handler(bean, "classLevelProtected")));
         assertEquals(403, response.getStatus());
@@ -87,7 +106,8 @@ class OwnerInterceptorTest {
 
     @Test
     void ownerPassesClassLevel() throws Exception {
-        loginWithRole(1);
+        login(1L, 1);
+        dbUser(1L, 1, 1);
         ProtectedApi bean = new ProtectedApi();
         assertTrue(interceptor.preHandle(request, response, handler(bean, "classLevelProtected")));
     }
@@ -96,6 +116,36 @@ class OwnerInterceptorTest {
     void noSessionBlocked() throws Exception {
         PlainApi bean = new PlainApi();
         assertFalse(interceptor.preHandle(request, response, handler(bean, "methodLevelProtected")));
+        assertEquals(403, response.getStatus());
+    }
+
+    @Test
+    void ownerDemotedInDbIsBlocked() throws Exception {
+        // 会话是旧的店长会话，但库里已被降为店员
+        login(1L, 1);
+        dbUser(1L, 0, 1);
+        ProtectedApi bean = new ProtectedApi();
+        assertFalse(interceptor.preHandle(request, response, handler(bean, "classLevelProtected")));
+        assertEquals(403, response.getStatus());
+    }
+
+    @Test
+    void ownerDisabledInDbIsBlocked() throws Exception {
+        // 店长账号被停用
+        login(1L, 1);
+        dbUser(1L, 1, 0);
+        ProtectedApi bean = new ProtectedApi();
+        assertFalse(interceptor.preHandle(request, response, handler(bean, "classLevelProtected")));
+        assertEquals(403, response.getStatus());
+    }
+
+    @Test
+    void userDeletedFromDbIsBlocked() throws Exception {
+        // 用户已从数据库删除，旧会话仍在
+        login(1L, 1);
+        when(sysUserMapper.selectById(1L)).thenReturn(null);
+        ProtectedApi bean = new ProtectedApi();
+        assertFalse(interceptor.preHandle(request, response, handler(bean, "classLevelProtected")));
         assertEquals(403, response.getStatus());
     }
 }

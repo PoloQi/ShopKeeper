@@ -79,6 +79,8 @@ export default function Supplier() {
 
   const handleOk = async () => {
     const values = await form.validateFields()
+    // 提交前去掉首尾空格，与后端归一一致
+    if (values.phone) values.phone = values.phone.trim()
     setSaving(true)
     try {
       if (editing) {
@@ -255,7 +257,13 @@ export default function Supplier() {
               <Form.Item
                 name="phone"
                 label="联系电话"
-                rules={[{ pattern: phonePattern, message: '请输入11位手机号或带区号的固话' }]}
+                rules={[
+                  {
+                    pattern: phonePattern,
+                    transform: (v) => (typeof v === 'string' ? v.trim() : v),
+                    message: '请输入11位手机号或带区号的固话'
+                  }
+                ]}
               >
                 <Input maxLength={20} />
               </Form.Item>
