@@ -16,6 +16,7 @@ import {
 } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import * as supplierApi from '../api/supplierApi'
+import { phonePattern } from '../utils/validators'
 
 const emptyQuery = { supplierName: '', phone: '', status: undefined }
 
@@ -245,7 +246,11 @@ export default function Supplier() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="phone" label="联系电话">
+              <Form.Item
+                name="phone"
+                label="联系电话"
+                rules={[{ pattern: phonePattern, message: '请输入11位手机号或带区号的固话' }]}
+              >
                 <Input maxLength={20} />
               </Form.Item>
             </Col>
