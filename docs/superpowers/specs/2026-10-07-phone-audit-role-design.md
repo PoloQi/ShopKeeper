@@ -58,7 +58,8 @@ public final class PhoneValidator {
         if (phone == null || phone.isBlank()) {
             return;
         }
-        if (!PHONE_PATTERN.matcher(phone).matches()) {
+        // strip() 容忍录入时首尾误带的空格
+        if (!PHONE_PATTERN.matcher(phone.strip()).matches()) {
             throw new BusinessException("联系电话格式不正确，请输入11位手机号或带区号的固话");
         }
     }
