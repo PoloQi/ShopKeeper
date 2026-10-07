@@ -17,6 +17,7 @@ import {
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import * as customerApi from '../api/customerApi'
 import { phonePattern } from '../utils/validators'
+import { useAuth } from '../context/AuthContext'
 
 const emptyQuery = { customerName: '', phone: '', status: undefined }
 
@@ -34,6 +35,7 @@ export default function Customer() {
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
   const [form] = Form.useForm()
+  const { user } = useAuth()
 
   const loadData = async () => {
     setLoading(true)
@@ -118,16 +120,20 @@ export default function Customer() {
       render: (_, record) => (
         <Space size="middle">
           <a onClick={() => openEdit(record)}>编辑</a>
-          <Popconfirm
-            title="删除确认"
-            description={`确定删除客户「${record.customerName}」吗？`}
-            okText="确定删除"
-            cancelText="取消"
-            okButtonProps={{ danger: true }}
-            onConfirm={() => handleDelete(record.customerId)}
-          >
-            <a style={{ color: 'var(--cinnabar)' }}>删除</a>
-          </Popconfirm>
+          {user.role === 1 ? (
+            <Popconfirm
+              title="删除确认"
+              description={`确定删除客户「${record.customerName}」吗？`}
+              okText="确定删除"
+              cancelText="取消"
+              okButtonProps={{ danger: true }}
+              onConfirm={() => handleDelete(record.customerId)}
+            >
+              <a style={{ color: 'var(--cinnabar)' }}>删除</a>
+            </Popconfirm>
+          ) : (
+            <span style={{ color: '#bbb' }}>删除</span>
+          )}
         </Space>
       )
     }

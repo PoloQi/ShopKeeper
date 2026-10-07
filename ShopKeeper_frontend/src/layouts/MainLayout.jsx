@@ -57,6 +57,15 @@ export default function MainLayout() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  // 店员看不到用户管理
+  const visibleMenuItems = menuItems.map((item) => {
+    if (!item.children) return item
+    const children = item.children.filter(
+      (child) => child.key !== '/user' || user.role === 1
+    )
+    return { ...item, children }
+  })
+
   if (loading) {
     return (
       <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -98,7 +107,7 @@ export default function MainLayout() {
           mode="inline"
           selectedKeys={[matchKey]}
           defaultOpenKeys={['base', 'purchase-group', 'sale-group']}
-          items={menuItems}
+          items={visibleMenuItems}
           onClick={({ key }) => {
             if (key.startsWith('/')) navigate(key)
           }}
@@ -115,7 +124,7 @@ export default function MainLayout() {
               <div className="sk-avatar">{(user.realName || user.username || '?').charAt(0)}</div>
               <div>
                 <div className="sk-user-name">{user.realName || user.username}</div>
-                <div className="sk-user-role">系统用户</div>
+                <div className="sk-user-role">{user.role === 1 ? '店长' : '店员'}</div>
               </div>
             </div>
             <Tooltip title="退出登录">

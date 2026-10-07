@@ -18,6 +18,7 @@ import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import * as saleApi from '../api/saleApi'
 import * as customerApi from '../api/customerApi'
+import { useAuth } from '../context/AuthContext'
 
 const emptyQuery = {
   soNo: '',
@@ -36,6 +37,7 @@ const toParams = (q) => ({
 
 export default function Sale() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [data, setData] = useState([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -114,13 +116,16 @@ export default function Sale() {
             ) : (
               <a onClick={() => navigate(`/sale/edit/${record.soNo}`)}>编辑</a>
             )}
-            {audited ? (
+            {audited || user.role !== 1 ? (
               <span style={{ color: '#bbb' }}>审核</span>
             ) : (
               <a onClick={() => navigate(`/sale/audit/${record.soNo}`)}>审核</a>
             )}
-            {audited ? (
-              <span style={{ color: '#bbb' }} title="已审核单据不能删除">
+            {audited || user.role !== 1 ? (
+              <span
+                style={{ color: '#bbb' }}
+                title={audited ? '已审核单据不能删除' : '需要店长权限'}
+              >
                 删除
               </span>
             ) : (
