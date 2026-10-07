@@ -77,12 +77,6 @@ export default function Purchase() {
     setApplied(emptyQuery)
   }
 
-  const handleAudit = async (poNo) => {
-    await purchaseApi.audit(poNo)
-    message.success('审核成功')
-    loadData()
-  }
-
   const handleDelete = async (poNo) => {
     await purchaseApi.remove(poNo)
     message.success('删除成功')
@@ -116,24 +110,14 @@ export default function Purchase() {
         return (
           <Space size="middle">
             {audited ? (
-              <span style={{ color: '#bbb' }} title="已审核单据不能修改">
-                编辑
-              </span>
+              <a onClick={() => navigate(`/purchase/view/${record.poNo}`)}>查看</a>
             ) : (
               <a onClick={() => navigate(`/purchase/edit/${record.poNo}`)}>编辑</a>
             )}
             {audited ? (
               <span style={{ color: '#bbb' }}>审核</span>
             ) : (
-              <Popconfirm
-                title="审核确认"
-                description={`确定审核采购单「${record.poNo}」吗？审核后将计入库存。`}
-                okText="确定审核"
-                cancelText="取消"
-                onConfirm={() => handleAudit(record.poNo)}
-              >
-                <a>审核</a>
-              </Popconfirm>
+              <a onClick={() => navigate(`/purchase/audit/${record.poNo}`)}>审核</a>
             )}
             {audited ? (
               <span style={{ color: '#bbb' }} title="已审核单据不能删除">

@@ -77,12 +77,6 @@ export default function Sale() {
     setApplied(emptyQuery)
   }
 
-  const handleAudit = async (soNo) => {
-    await saleApi.audit(soNo)
-    message.success('审核成功')
-    loadData()
-  }
-
   const handleDelete = async (soNo) => {
     await saleApi.remove(soNo)
     message.success('删除成功')
@@ -116,24 +110,14 @@ export default function Sale() {
         return (
           <Space size="middle">
             {audited ? (
-              <span style={{ color: '#bbb' }} title="已审核单据不能修改">
-                编辑
-              </span>
+              <a onClick={() => navigate(`/sale/view/${record.soNo}`)}>查看</a>
             ) : (
               <a onClick={() => navigate(`/sale/edit/${record.soNo}`)}>编辑</a>
             )}
             {audited ? (
               <span style={{ color: '#bbb' }}>审核</span>
             ) : (
-              <Popconfirm
-                title="审核确认"
-                description={`确定审核销售单「${record.soNo}」吗？审核后将扣减库存。`}
-                okText="确定审核"
-                cancelText="取消"
-                onConfirm={() => handleAudit(record.soNo)}
-              >
-                <a>审核</a>
-              </Popconfirm>
+              <a onClick={() => navigate(`/sale/audit/${record.soNo}`)}>审核</a>
             )}
             {audited ? (
               <span style={{ color: '#bbb' }} title="已审核单据不能删除">

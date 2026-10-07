@@ -26,9 +26,13 @@ export default function App() {
           <Route path="purchase" element={<Purchase />} />
           <Route path="purchase/new" element={<PurchaseEdit />} />
           <Route path="purchase/edit/:poNo" element={<PurchaseEdit />} />
+          <Route path="purchase/audit/:poNo" element={<PurchaseEdit />} />
+          <Route path="purchase/view/:poNo" element={<PurchaseEdit />} />
           <Route path="sale" element={<Sale />} />
           <Route path="sale/new" element={<SaleEdit />} />
           <Route path="sale/edit/:soNo" element={<SaleEdit />} />
+          <Route path="sale/audit/:soNo" element={<SaleEdit />} />
+          <Route path="sale/view/:soNo" element={<SaleEdit />} />
           <Route path="stock" element={<Stock />} />
         </Route>
       </Routes>

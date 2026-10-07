@@ -15,11 +15,12 @@ import {
   message
 } from 'antd'
 import { PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import dayjs from 'dayjs'
 import * as saleApi from '../api/saleApi'
 import * as customerApi from '../api/customerApi'
 import * as productApi from '../api/productApi'
+import { useAuth } from '../context/AuthContext'
 
 const discountOptions = [1, 0.95, 0.9, 0.85, 0.8, 0.7].map((d) => ({
   value: d,
@@ -32,12 +33,23 @@ const rowAmount = (r) => (r.unitPrice || 0) * (r.quantity || 0) * (r.discount ??
 
 export default function SaleEdit() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { soNo } = useParams()
-  const isEdit = Boolean(soNo)
+  const { user: authUser } = useAuth()
+
+  // edit 可编辑；audit 只读且店长可审核；view 纯只读
+  const mode = location.pathname.includes('/audit/')
+    ? 'audit'
+    : location.pathname.includes('/view/')
+      ? 'view'
+      : 'edit'
+  const readOnly = mode !== 'edit'
+  const hasNo = Boolean(soNo)
 
   const [form] = Form.useForm()
-  const [loading, setLoading] = useState(isEdit)
+  const [loading, setLoading] = useState(hasNo)
   const [saving, setSaving] = useState(false)
+  const [auditing, setAuditing] = useState(false)
   const [customers, setCustomers] = useState([])
   const [products, setProducts] = useState([])
   const [items, setItems] = useState(() => [newRow()])
@@ -48,7 +60,7 @@ export default function SaleEdit() {
   }, [])
 
   useEffect(() => {
-    if (!isEdit) return
+    if (!hasNo) return
     saleApi
       .getDetail(soNo)
       .then((res) => {
@@ -67,7 +79,7 @@ export default function SaleEdit() {
         )
       })
       .finally(() => setLoading(false))
-  }, [isEdit, soNo, form])
+  }, [hasNo, soNo, form])
 
   const updateRow = (index, patch) => {
     setItems(items.map((r, i) => (i === index ? { ...r, ...patch } : r)))
@@ -96,7 +108,7 @@ export default function SaleEdit() {
     }
 
     const payload = {
-      soNo: isEdit ? soNo : undefined,
+      soNo: hasNo ? soNo : undefined,
       customerId: values.customerId,
       orderDate: values.orderDate.format('YYYY-MM-DD'),
       deliveryPlace: values.deliveryPlace,
@@ -113,6 +125,17 @@ export default function SaleEdit() {
     }
   }
 
+  const handleAudit = async () => {
+    setAuditing(true)
+    try {
+      await saleApi.audit(soNo)
+      message.success('审核成功')
+      navigate('/sale')
+    } finally {
+      setAuditing(false)
+    }
+  }
+
   const totalAmount = items.reduce((sum, r) => sum + rowAmount(r), 0)
 
   const columns = [
@@ -122,6 +145,7 @@ export default function SaleEdit() {
       render: (_, __, index) => (
         <Select
           showSearch
+          disabled={readOnly}
           optionFilterProp="label"
           style={{ width: '100%' }}
           placeholder="请选择商品"
@@ -141,6 +165,7 @@ export default function SaleEdit() {
         <InputNumber
           min={1}
           precision={0}
+          disabled={readOnly}
           style={{ width: '100%' }}
           value={items[index].quantity}
           onChange={(v) => updateRow(index, { quantity: v })}
@@ -154,6 +179,7 @@ export default function SaleEdit() {
         <InputNumber
           min={0}
           precision={2}
+          disabled={readOnly}
           style={{ width: '100%' }}
           value={items[index].unitPrice}
           onChange={(v) => updateRow(index, { unitPrice: v })}
@@ -166,6 +192,7 @@ export default function SaleEdit() {
       render: (_, __, index) => (
         <Select
           style={{ width: '100%' }}
+          disabled={readOnly}
           value={items[index].discount}
           onChange={(v) => updateRow(index, { discount: v })}
           options={discountOptions}
@@ -178,7 +205,11 @@ export default function SaleEdit() {
       align: 'right',
       render: (_, __, index) => rowAmount(items[index]).toFixed(2)
     },
-    {
+  ]
+
+  // 只读模式下不提供删行入口
+  if (!readOnly) {
+    columns.push({
       title: '操作',
       width: 80,
       render: (_, __, index) => (
@@ -189,8 +220,8 @@ export default function SaleEdit() {
           删除
         </a>
       )
-    }
-  ]
+    })
+  }
 
   if (loading) {
     return (
@@ -203,11 +234,11 @@ export default function SaleEdit() {
   return (
     <Space direction="vertical" style={{ width: '100%' }} size={16}>
       <Card>
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" disabled={readOnly}>
           <Row gutter={16}>
             <Col span={6}>
               <Form.Item label="销售单号">
-                <Input value={isEdit ? soNo : '保存后自动生成'} disabled />
+                <Input value={hasNo ? soNo : '保存后自动生成'} disabled />
               </Form.Item>
             </Col>
             <Col span={6}>
@@ -252,13 +283,17 @@ export default function SaleEdit() {
       <Card
         title="销售明细"
         extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setItems([...items, newRow()])}
-          >
-            添加明细
-          </Button>
+          readOnly
+            ? null
+            : (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setItems([...items, newRow()])}
+              >
+                添加明细
+              </Button>
+            )
         }
       >
         <Table
@@ -278,9 +313,16 @@ export default function SaleEdit() {
           <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/sale')}>
             返回
           </Button>
-          <Button type="primary" loading={saving} onClick={handleSave}>
-            保存单据
-          </Button>
+          {mode === 'edit' && (
+            <Button type="primary" loading={saving} onClick={handleSave}>
+              保存单据
+            </Button>
+          )}
+          {mode === 'audit' && authUser?.role === 1 && (
+            <Button type="primary" loading={auditing} onClick={handleAudit}>
+              审核通过
+            </Button>
+          )}
         </Space>
       </div>
     </Space>
