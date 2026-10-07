@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.shopkeeper_backend.mapper.PurchaseOrderMapper">
+
+    <sql id="queryWhere">
+        <where>
+            <if test="poNo != null and poNo != ''">
+                AND po.po_no LIKE CONCAT('%', #{poNo}, '%')
+            </if>
+            <if test="supplierId != null and supplierId != ''">
+                AND po.supplier_id = #{supplierId}
+            </if>
+            <if test="status != null and status != ''">
+                AND po.status = #{status}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND po.order_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND po.order_date &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*)
+        FROM purchase_order po
+        <include refid="queryWhere"/>
+    </select>
+
+    <select id="selectPage"
+            resultType="org.example.shopkeeper_backend.vo.PurchaseOrderVO">
+        SELECT po.po_no,
+               po.supplier_id,
+               s.supplier_name,
+               po.operator_id,
+               u.real_name      AS operator_name,
+               po.order_date,
+               po.delivery_place,
+               po.status,
+               po.remark,
+               (SELECT COALESCE(SUM(ROUND(pi.quantity * pi.unit_price * pi.discount, 2)), 0)
+                FROM purchase_item pi
+                WHERE pi.po_no = po.po_no) AS total_amount
+        FROM purchase_order po
+        LEFT JOIN supplier s ON po.supplier_id = s.supplier_id
+        LEFT JOIN sys_user u ON po.operator_id = u.user_id
+        <include refid="queryWhere"/>
+        ORDER BY po.po_no DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="selectById"
+            resultType="org.example.shopkeeper_backend.entity.PurchaseOrder">
+        SELECT po_no, supplier_id, operator_id, order_date, delivery_place, status, remark
+        FROM purchase_order
+        WHERE po_no = #{poNo}
+    </select>
+
+    <!-- 详情明细：来自完整信息视图 -->
+    <select id="selectDetailByPoNo"
+            resultType="org.example.shopkeeper_backend.vo.PurchaseDetailVO">
+        SELECT product_id, product_name, spec, unit,
+               quantity, unit_price, discount, amount
+        FROM v_purchase_full
+        WHERE po_no = #{poNo}
+    </select>
+
+    <insert id="insert" parameterType="org.example.shopkeeper_backend.entity.PurchaseOrder">
+        INSERT INTO purchase_order (po_no, supplier_id, operator_id, order_date,
+                                   delivery_place, status, remark)
+        VALUES (#{poNo}, #{supplierId}, #{operatorId}, #{orderDate},
+                #{deliveryPlace}, #{status}, #{remark})
+    </insert>
+
+    <update id="update" parameterType="org.example.shopkeeper_backend.entity.PurchaseOrder">
+        UPDATE purchase_order
+        SET supplier_id    = #{supplierId},
+            order_date     = #{orderDate},
+            delivery_place = #{deliveryPlace},
+            remark         = #{remark}
+        WHERE po_no = #{poNo}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE purchase_order
+        SET status = #{status}
+        WHERE po_no = #{poNo}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM purchase_order WHERE po_no = #{poNo}
+    </delete>
+
+    <!-- 查某日最大单号，用于生成 CG+yyyyMMdd+3位流水 -->
+    <select id="selectMaxNoByDate" resultType="string">
+        SELECT MAX(po_no)
+        FROM purchase_order
+        WHERE po_no LIKE CONCAT('CG', #{dateStr}, '%')
+    </select>
+
+</mapper>

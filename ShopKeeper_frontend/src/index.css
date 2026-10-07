@@ -1,0 +1,558 @@
+/* ============================================================
+   店管家 · 全局设计系统
+   主题：东方商号 · 现代账房（松烟墨绿 / 朱砂印章 / 宣纸暖米）
+   ============================================================ */
+
+:root {
+  --pine: #215c4d;
+  --pine-deep: #16392f;
+  --pine-hover: #2c6f5c;
+  --pine-light: #e9f0ec;
+  --cinnabar: #c2453b;
+  --cinnabar-deep: #a8382f;
+  --gold: #b08d4f;
+  --paper: #f5f2ea;
+  --card: #fffef9;
+  --ink: #1d2a26;
+  --line: #e6e3d9;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: var(--ink);
+  background-color: var(--paper);
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 衬线工具类：品牌、标题 */
+.font-serif {
+  font-family: 'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+}
+
+/* 全屏宣纸颗粒（顶层、不拦截交互） */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23a)'/%3E%3C/svg%3E");
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cfd6cf;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b3bdb4;
+  background-clip: content-box;
+}
+
+/* ============================================================
+   侧栏与品牌
+   ============================================================ */
+
+.sk-sider {
+  background: linear-gradient(180deg, #1b4a3b 0%, #153c31 52%, #102e26 100%) !important;
+  box-shadow: 2px 0 12px rgba(16, 46, 38, 0.18);
+}
+
+.sk-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 18px 14px;
+}
+
+.sk-seal {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-weight: 700;
+  font-size: 22px;
+  background: linear-gradient(150deg, #cf4a3f, #a8382f);
+  box-shadow: 0 3px 8px rgba(194, 69, 59, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.sk-brand-name {
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 3px;
+  line-height: 1.25;
+  color: #fff;
+}
+
+.sk-brand-sub {
+  font-size: 10px;
+  letter-spacing: 2.4px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.sk-sider-divider {
+  height: 1px;
+  margin: 2px 18px 10px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0));
+}
+
+/* 深色菜单 */
+.sk-menu.ant-menu-dark,
+.sk-menu.ant-menu-dark .ant-menu-sub {
+  background: transparent !important;
+}
+
+.sk-menu.ant-menu-dark .ant-menu-submenu-title {
+  height: 46px;
+  line-height: 46px;
+  margin-block: 2px;
+  letter-spacing: 1px;
+}
+
+.sk-menu.ant-menu-dark .ant-menu-item .ant-menu-item-icon,
+.sk-menu.ant-menu-dark .ant-menu-submenu-title .ant-menu-item-icon {
+  font-size: 16px;
+}
+
+.sk-menu.ant-menu-dark .ant-menu-item-selected {
+  font-weight: 500;
+}
+
+/* 选中项左侧朱砂竖印 */
+.sk-menu.ant-menu-dark .ant-menu-item-selected::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--cinnabar);
+}
+
+.sk-menu.ant-menu-dark .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  color: #fff;
+}
+
+/* ============================================================
+   顶栏
+   ============================================================ */
+
+.sk-header {
+  height: 60px !important;
+  line-height: 60px;
+  padding: 0 24px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card) !important;
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgba(29, 42, 38, 0.02);
+}
+
+.sk-header-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.sk-header-title .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--cinnabar);
+}
+
+.sk-userbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sk-userchip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px 5px 5px;
+  border-radius: 999px;
+  background: var(--pine-light);
+}
+
+.sk-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--pine);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 700;
+}
+
+.sk-user-name {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.sk-user-role {
+  font-size: 11px;
+  color: #7c9187;
+  line-height: 1.3;
+}
+
+/* ============================================================
+   内容区与路由动效
+   ============================================================ */
+
+.sk-inner-layout {
+  background: var(--paper) !important;
+}
+
+.sk-content {
+  margin: 20px;
+  overflow: auto;
+}
+
+.page-enter {
+  animation: pageUp 0.45s cubic-bezier(0.22, 0.8, 0.36, 1) both;
+}
+
+@keyframes pageUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================================
+   卡片 / 表格 / 标签 / 弹窗（全局，不改页面结构）
+   ============================================================ */
+
+.ant-card {
+  border-color: var(--line);
+}
+
+.ant-card-head {
+  min-height: 52px;
+  border-bottom-color: var(--line);
+}
+
+.ant-card-head-title {
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+
+.ant-table {
+  color: #2f3e39;
+  font-variant-numeric: tabular-nums;
+}
+
+.ant-table-thead > tr > th {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom-color: #eeece3;
+}
+
+/* 柔化预设 Tag（antd 预设色走内联样式，需 !important 覆盖） */
+.ant-tag-green {
+  background: #e7f1ea !important;
+  border-color: #c8ddd1 !important;
+  color: var(--pine) !important;
+}
+
+.ant-tag-orange {
+  background: #f8eedd !important;
+  border-color: #ecd9bb !important;
+  color: #9a6212 !important;
+}
+
+.ant-tag:not(.ant-tag-green):not(.ant-tag-orange):not(.ant-tag-red):not(.ant-tag-blue) {
+  background: #f0ede3;
+  border-color: #e0dccf;
+  color: #857f6e;
+}
+
+.ant-tag {
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+/* 主按钮：墨绿投影 */
+.ant-btn-primary {
+  box-shadow: 0 2px 6px rgba(33, 92, 77, 0.25);
+}
+
+.ant-btn-primary:hover {
+  box-shadow: 0 3px 10px rgba(33, 92, 77, 0.32);
+}
+
+.ant-modal .ant-modal-title {
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   登录页
+   ============================================================ */
+
+.sk-login {
+  display: flex;
+  height: 100%;
+  background: var(--paper);
+}
+
+/* 左侧品牌区 */
+.sk-login-brand {
+  position: relative;
+  flex: 1.15;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 50px;
+  color: #fff;
+  background: linear-gradient(160deg, #246352 0%, #184639 46%, #112f27 100%);
+}
+
+.sk-login-brand::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23a)'/%3E%3C/svg%3E");
+}
+
+/* 水墨大字水印 */
+.sk-login-brand::after {
+  content: '店';
+  position: absolute;
+  right: -26px;
+  bottom: -118px;
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-weight: 900;
+  font-size: 420px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+
+.sk-login-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sk-login-top .sk-seal {
+  width: 48px;
+  height: 48px;
+  border-radius: 11px;
+  font-size: 27px;
+}
+
+.sk-login-top .sk-brand-name {
+  font-size: 23px;
+}
+
+.sk-login-headline {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+}
+
+.sk-login-headline h1 {
+  margin: 0 0 14px;
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-weight: 900;
+  font-size: 38px;
+  line-height: 1.4;
+  letter-spacing: 4px;
+}
+
+.sk-login-headline p {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.sk-login-feats {
+  position: relative;
+  z-index: 1;
+  margin: 30px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.sk-login-feat {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.sk-login-feat .ic {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.sk-login-foot {
+  position: relative;
+  z-index: 1;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* 右侧表单区 */
+.sk-login-formwrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.sk-login-card {
+  width: 380px;
+  max-width: 100%;
+}
+
+.sk-login-seal-mobile {
+  display: none;
+  margin: 0 auto 24px;
+  width: 58px;
+  height: 58px;
+  border-radius: 13px;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 700;
+  font-size: 32px;
+  background: linear-gradient(150deg, #cf4a3f, #a8382f);
+}
+
+.sk-login-card h2 {
+  margin: 0 0 6px;
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 2px;
+}
+
+.sk-login-card .sub {
+  margin-bottom: 30px;
+  color: #8b8575;
+  font-size: 14px;
+}
+
+.sk-login-demo {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 13px;
+  color: #96917f;
+}
+
+.sk-login-demo b {
+  color: var(--pine);
+  font-weight: 600;
+}
+
+/* 入场编排 */
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.sk-login-top,
+.sk-login-headline,
+.sk-login-feats,
+.sk-login-foot,
+.sk-login-card {
+  animation: riseIn 0.7s cubic-bezier(0.22, 0.8, 0.36, 1) both;
+}
+
+.sk-login-headline {
+  animation-delay: 0.08s;
+}
+.sk-login-feats {
+  animation-delay: 0.18s;
+}
+.sk-login-foot {
+  animation-delay: 0.28s;
+}
+.sk-login-card {
+  animation-delay: 0.1s;
+}
+
+/* 窄屏：隐藏品牌区，显示小印章 */
+@media (max-width: 880px) {
+  .sk-login-brand {
+    display: none;
+  }
+  .sk-login-seal-mobile {
+    display: flex;
+  }
+}

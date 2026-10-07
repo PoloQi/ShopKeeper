@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.shopkeeper_backend.mapper.SaleItemMapper">
+
+    <insert id="batchInsert">
+        INSERT INTO sale_item (so_no, product_id, quantity, unit_price, discount)
+        VALUES
+        <foreach collection="list" item="it" separator=",">
+            (#{it.soNo}, #{it.productId}, #{it.quantity}, #{it.unitPrice}, #{it.discount})
+        </foreach>
+    </insert>
+
+    <delete id="deleteBySoNo">
+        DELETE FROM sale_item WHERE so_no = #{soNo}
+    </delete>
+
+</mapper>

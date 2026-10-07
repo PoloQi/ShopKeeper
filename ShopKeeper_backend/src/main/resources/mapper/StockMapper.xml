@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.shopkeeper_backend.mapper.StockMapper">
+
+    <!-- 查询实时库存视图 v_stock -->
+    <select id="selectStockList" resultType="org.example.shopkeeper_backend.vo.StockVO">
+        SELECT product_id, product_name, spec, unit, unit_price,
+               purchase_qty, sale_qty, stock_qty
+        FROM v_stock
+        <where>
+            <if test="productName != null and productName != ''">
+                AND product_name LIKE CONCAT('%', #{productName}, '%')
+            </if>
+            <if test="productId != null and productId != ''">
+                AND product_id = #{productId}
+            </if>
+            <if test="onlyPositive">
+                AND stock_qty &gt; 0
+            </if>
+        </where>
+        ORDER BY product_id
+    </select>
+
+</mapper>
