@@ -3,6 +3,7 @@ package org.example.shopkeeper_backend.controller;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.shopkeeper_backend.common.OwnerOnly;
 import org.example.shopkeeper_backend.common.PageResult;
 import org.example.shopkeeper_backend.common.Result;
 import org.example.shopkeeper_backend.dto.SaleSaveDTO;
@@ -55,6 +56,7 @@ public class SaleController {
     }
 
     /** 删除（已审核禁删） */
+    @OwnerOnly
     @DeleteMapping("/{soNo}")
     public Result<Void> delete(@PathVariable String soNo) {
         saleService.delete(soNo);
@@ -62,6 +64,7 @@ public class SaleController {
     }
 
     /** 审核 */
+    @OwnerOnly
     @PutMapping("/{soNo}/audit")
     public Result<Void> audit(@PathVariable String soNo) {
         saleService.audit(soNo);

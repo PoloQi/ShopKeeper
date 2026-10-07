@@ -2,6 +2,7 @@ package org.example.shopkeeper_backend.controller;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.example.shopkeeper_backend.common.OwnerOnly;
 import org.example.shopkeeper_backend.common.PageResult;
 import org.example.shopkeeper_backend.common.Result;
 import org.example.shopkeeper_backend.entity.SysUser;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@OwnerOnly
 public class UserController {
 
     private final UserService userService;
