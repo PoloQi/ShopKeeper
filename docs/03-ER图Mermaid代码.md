@@ -195,6 +195,7 @@ erDiagram
         varchar password
         varchar real_name
         char gender
+        tinyint role
         tinyint status
     }
     CUSTOMER {
