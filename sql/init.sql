@@ -22,10 +22,12 @@ CREATE TABLE sys_user (
     password   VARCHAR(100) NOT NULL COMMENT 'BCrypt密码密文',
     real_name  VARCHAR(50)  NOT NULL COMMENT '真实姓名',
     gender     CHAR(1)      NOT NULL COMMENT '性别 M男 F女',
+    role       TINYINT      NOT NULL DEFAULT 0 COMMENT '1店长 0店员',
     status     TINYINT      NOT NULL DEFAULT 1 COMMENT '1启用 0停用',
     PRIMARY KEY (user_id),
     UNIQUE KEY uk_username (username),
     CONSTRAINT ck_user_gender CHECK (gender IN ('M','F')),
+    CONSTRAINT ck_user_role CHECK (role IN (0,1)),
     CONSTRAINT ck_user_status CHECK (status IN (0,1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 

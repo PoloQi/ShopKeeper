@@ -17,6 +17,7 @@ import {
 } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import * as productApi from '../api/productApi'
+import { useAuth } from '../context/AuthContext'
 
 const categoryOptions = [
   { value: '食品', label: '食品' },
@@ -45,6 +46,7 @@ export default function Product() {
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
   const [form] = Form.useForm()
+  const { user } = useAuth()
 
   const loadData = async () => {
     setLoading(true)
@@ -134,16 +136,20 @@ export default function Product() {
       render: (_, record) => (
         <Space size="middle">
           <a onClick={() => openEdit(record)}>编辑</a>
-          <Popconfirm
-            title="删除确认"
-            description={`确定删除商品「${record.productName}」吗？`}
-            okText="确定删除"
-            cancelText="取消"
-            okButtonProps={{ danger: true }}
-            onConfirm={() => handleDelete(record.productId)}
-          >
-            <a style={{ color: 'var(--cinnabar)' }}>删除</a>
-          </Popconfirm>
+          {user.role === 1 ? (
+            <Popconfirm
+              title="删除确认"
+              description={`确定删除商品「${record.productName}」吗？`}
+              okText="确定删除"
+              cancelText="取消"
+              okButtonProps={{ danger: true }}
+              onConfirm={() => handleDelete(record.productId)}
+            >
+              <a style={{ color: 'var(--cinnabar)' }}>删除</a>
+            </Popconfirm>
+          ) : (
+            <span style={{ color: '#bbb' }}>删除</span>
+          )}
         </Space>
       )
     }

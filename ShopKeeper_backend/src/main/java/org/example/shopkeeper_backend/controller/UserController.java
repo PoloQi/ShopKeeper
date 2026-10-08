@@ -2,6 +2,7 @@ package org.example.shopkeeper_backend.controller;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.example.shopkeeper_backend.common.OwnerOnly;
 import org.example.shopkeeper_backend.common.PageResult;
 import org.example.shopkeeper_backend.common.Result;
 import org.example.shopkeeper_backend.entity.SysUser;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@OwnerOnly
 public class UserController {
 
     private final UserService userService;
@@ -29,10 +31,11 @@ public class UserController {
     public Result<PageResult<SysUser>> page(
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String realName,
+            @RequestParam(required = false) Integer role,
             @RequestParam(required = false) Integer status,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return Result.ok(userService.page(username, realName, status, page, size));
+        return Result.ok(userService.page(username, realName, role, status, page, size));
     }
 
     @PostMapping

@@ -15,11 +15,12 @@ import {
   message
 } from 'antd'
 import { PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import dayjs from 'dayjs'
 import * as purchaseApi from '../api/purchaseApi'
 import * as supplierApi from '../api/supplierApi'
 import * as productApi from '../api/productApi'
+import { useAuth } from '../context/AuthContext'
 
 const discountOptions = [1, 0.95, 0.9, 0.85, 0.8, 0.7].map((d) => ({
   value: d,
@@ -32,12 +33,25 @@ const rowAmount = (r) => (r.unitPrice || 0) * (r.quantity || 0) * (r.discount ??
 
 export default function PurchaseEdit() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { poNo } = useParams()
-  const isEdit = Boolean(poNo)
+  const { user: authUser } = useAuth()
+
+  // edit 可编辑；audit 只读且店长可审核；view 纯只读
+  const mode = location.pathname.includes('/audit/')
+    ? 'audit'
+    : location.pathname.includes('/view/')
+      ? 'view'
+      : 'edit'
+  const readOnly = mode !== 'edit'
+  const hasNo = Boolean(poNo)
 
   const [form] = Form.useForm()
-  const [loading, setLoading] = useState(isEdit)
+  const [loading, setLoading] = useState(hasNo)
   const [saving, setSaving] = useState(false)
+  const [auditing, setAuditing] = useState(false)
+  // 单据审核状态（'0' 未审核 / '1' 已审核）；null 表示未加载或加载失败
+  const [docStatus, setDocStatus] = useState(null)
   const [suppliers, setSuppliers] = useState([])
   const [products, setProducts] = useState([])
   const [items, setItems] = useState(() => [newRow()])
@@ -48,7 +62,7 @@ export default function PurchaseEdit() {
   }, [])
 
   useEffect(() => {
-    if (!isEdit) return
+    if (!hasNo) return
     purchaseApi
       .getDetail(poNo)
       .then((res) => {
@@ -65,9 +79,11 @@ export default function PurchaseEdit() {
             discount: it.discount
           }))
         )
+        setDocStatus(d.status)
       })
+      .catch(() => message.error('单据加载失败'))
       .finally(() => setLoading(false))
-  }, [isEdit, poNo, form])
+  }, [hasNo, poNo, form])
 
   const updateRow = (index, patch) => {
     setItems(items.map((r, i) => (i === index ? { ...r, ...patch } : r)))
@@ -96,7 +112,7 @@ export default function PurchaseEdit() {
     }
 
     const payload = {
-      poNo: isEdit ? poNo : undefined,
+      poNo: hasNo ? poNo : undefined,
       supplierId: values.supplierId,
       orderDate: values.orderDate.format('YYYY-MM-DD'),
       deliveryPlace: values.deliveryPlace,
@@ -113,6 +129,17 @@ export default function PurchaseEdit() {
     }
   }
 
+  const handleAudit = async () => {
+    setAuditing(true)
+    try {
+      await purchaseApi.audit(poNo)
+      message.success('审核成功')
+      navigate('/purchase')
+    } finally {
+      setAuditing(false)
+    }
+  }
+
   const totalAmount = items.reduce((sum, r) => sum + rowAmount(r), 0)
 
   const columns = [
@@ -122,6 +149,7 @@ export default function PurchaseEdit() {
       render: (_, __, index) => (
         <Select
           showSearch
+          disabled={readOnly}
           optionFilterProp="label"
           style={{ width: '100%' }}
           placeholder="请选择商品"
@@ -141,6 +169,7 @@ export default function PurchaseEdit() {
         <InputNumber
           min={1}
           precision={0}
+          disabled={readOnly}
           style={{ width: '100%' }}
           value={items[index].quantity}
           onChange={(v) => updateRow(index, { quantity: v })}
@@ -154,6 +183,7 @@ export default function PurchaseEdit() {
         <InputNumber
           min={0}
           precision={2}
+          disabled={readOnly}
           style={{ width: '100%' }}
           value={items[index].unitPrice}
           onChange={(v) => updateRow(index, { unitPrice: v })}
@@ -166,6 +196,7 @@ export default function PurchaseEdit() {
       render: (_, __, index) => (
         <Select
           style={{ width: '100%' }}
+          disabled={readOnly}
           value={items[index].discount}
           onChange={(v) => updateRow(index, { discount: v })}
           options={discountOptions}
@@ -178,7 +209,11 @@ export default function PurchaseEdit() {
       align: 'right',
       render: (_, __, index) => rowAmount(items[index]).toFixed(2)
     },
-    {
+  ]
+
+  // 只读模式下不提供删行入口
+  if (!readOnly) {
+    columns.push({
       title: '操作',
       width: 80,
       render: (_, __, index) => (
@@ -189,8 +224,8 @@ export default function PurchaseEdit() {
           删除
         </a>
       )
-    }
-  ]
+    })
+  }
 
   if (loading) {
     return (
@@ -203,11 +238,11 @@ export default function PurchaseEdit() {
   return (
     <Space direction="vertical" style={{ width: '100%' }} size={16}>
       <Card>
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" disabled={readOnly}>
           <Row gutter={16}>
             <Col span={6}>
               <Form.Item label="采购单号">
-                <Input value={isEdit ? poNo : '保存后自动生成'} disabled />
+                <Input value={hasNo ? poNo : '保存后自动生成'} disabled />
               </Form.Item>
             </Col>
             <Col span={6}>
@@ -252,13 +287,17 @@ export default function PurchaseEdit() {
       <Card
         title="采购明细"
         extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setItems([...items, newRow()])}
-          >
-            添加明细
-          </Button>
+          readOnly
+            ? null
+            : (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setItems([...items, newRow()])}
+              >
+                添加明细
+              </Button>
+            )
         }
       >
         <Table
@@ -278,9 +317,16 @@ export default function PurchaseEdit() {
           <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/purchase')}>
             返回
           </Button>
-          <Button type="primary" loading={saving} onClick={handleSave}>
-            保存单据
-          </Button>
+          {mode === 'edit' && (
+            <Button type="primary" loading={saving} onClick={handleSave}>
+              保存单据
+            </Button>
+          )}
+          {mode === 'audit' && authUser?.role === 1 && docStatus === '0' && (
+            <Button type="primary" loading={auditing} onClick={handleAudit}>
+              审核通过
+            </Button>
+          )}
         </Space>
       </div>
     </Space>

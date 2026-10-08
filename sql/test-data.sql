@@ -21,10 +21,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- -------------------------------------------------------------
 -- 用户（密码均为 123456 的 BCrypt 密文）
 -- -------------------------------------------------------------
-INSERT INTO sys_user (user_id, username, password, real_name, gender, status) VALUES
-(1, 'admin',    '$2a$10$h/rhDQCy34lHe.ApfxhDNuHKW.AhBaI484YVe4VD5F8YwYpAj5O3y', '系统管理员', 'M', 1),
-(2, 'zhangwei', '$2a$10$h/rhDQCy34lHe.ApfxhDNuHKW.AhBaI484YVe4VD5F8YwYpAj5O3y', '张伟',       'M', 1),
-(3, 'lina',     '$2a$10$h/rhDQCy34lHe.ApfxhDNuHKW.AhBaI484YVe4VD5F8YwYpAj5O3y', '李娜',       'F', 1);
+INSERT INTO sys_user (user_id, username, password, real_name, gender, role, status) VALUES
+(1, 'admin',    '$2a$10$h/rhDQCy34lHe.ApfxhDNuHKW.AhBaI484YVe4VD5F8YwYpAj5O3y', '系统管理员', 'M', 1, 1),
+(2, 'zhangwei', '$2a$10$h/rhDQCy34lHe.ApfxhDNuHKW.AhBaI484YVe4VD5F8YwYpAj5O3y', '张伟',       'M', 0, 1),
+(3, 'lina',     '$2a$10$h/rhDQCy34lHe.ApfxhDNuHKW.AhBaI484YVe4VD5F8YwYpAj5O3y', '李娜',       'F', 0, 1);
 
 -- -------------------------------------------------------------
 -- 供应商

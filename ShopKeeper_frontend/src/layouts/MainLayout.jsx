@@ -66,6 +66,15 @@ export default function MainLayout() {
   }
   if (!user) return <Navigate to="/login" replace />
 
+  // 店员看不到用户管理（须放在 user 守卫之后，避免首屏 user 为 null 时崩溃）
+  const visibleMenuItems = menuItems.map((item) => {
+    if (!item.children) return item
+    const children = item.children.filter(
+      (child) => child.key !== '/user' || user.role === 1
+    )
+    return { ...item, children }
+  })
+
   // 列表页与编辑页都高亮对应菜单
   const matchKey =
     ['/customer', '/supplier', '/product', '/user', '/purchase', '/sale', '/stock'].find(
@@ -98,7 +107,7 @@ export default function MainLayout() {
           mode="inline"
           selectedKeys={[matchKey]}
           defaultOpenKeys={['base', 'purchase-group', 'sale-group']}
-          items={menuItems}
+          items={visibleMenuItems}
           onClick={({ key }) => {
             if (key.startsWith('/')) navigate(key)
           }}
@@ -115,7 +124,7 @@ export default function MainLayout() {
               <div className="sk-avatar">{(user.realName || user.username || '?').charAt(0)}</div>
               <div>
                 <div className="sk-user-name">{user.realName || user.username}</div>
-                <div className="sk-user-role">系统用户</div>
+                <div className="sk-user-role">{user.role === 1 ? '店长' : '店员'}</div>
               </div>
             </div>
             <Tooltip title="退出登录">

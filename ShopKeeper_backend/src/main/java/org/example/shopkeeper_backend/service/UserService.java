@@ -18,12 +18,12 @@ public class UserService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public PageResult<SysUser> page(String username, String realName, Integer status,
+    public PageResult<SysUser> page(String username, String realName, Integer role, Integer status,
                                     int page, int size) {
-        long total = userMapper.count(username, realName, status);
+        long total = userMapper.count(username, realName, role, status);
         List<SysUser> records = total == 0
                 ? List.of()
-                : userMapper.selectPage(username, realName, status, (page - 1) * size, size);
+                : userMapper.selectPage(username, realName, role, status, (page - 1) * size, size);
         return new PageResult<>(total, records);
     }
 

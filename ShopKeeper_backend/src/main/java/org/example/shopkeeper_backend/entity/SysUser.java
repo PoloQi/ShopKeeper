@@ -23,6 +23,9 @@ public class SysUser {
     /** 性别 M 男 / F 女 */
     private String gender;
 
+    /** 1 店长 / 0 店员 */
+    private Integer role;
+
     /** 1 启用 / 0 停用 */
     private Integer status;
 }

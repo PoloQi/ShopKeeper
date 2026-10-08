@@ -2,6 +2,7 @@ package org.example.shopkeeper_backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.shopkeeper_backend.common.PageResult;
+import org.example.shopkeeper_backend.common.PhoneValidator;
 import org.example.shopkeeper_backend.entity.Supplier;
 import org.example.shopkeeper_backend.mapper.SupplierMapper;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,8 @@ public class SupplierService {
 
     /** 新增：自动生成 GYS+3位流水 编号，返回编号 */
     public String add(Supplier supplier) {
+        supplier.setPhone(PhoneValidator.normalize(supplier.getPhone()));
+        PhoneValidator.check(supplier.getPhone());
         String maxId = supplierMapper.selectMaxId();
         int seq = maxId == null ? 1 : Integer.parseInt(maxId.substring(3)) + 1;
         supplier.setSupplierId(String.format("GYS%03d", seq));
@@ -42,6 +45,8 @@ public class SupplierService {
     }
 
     public void update(Supplier supplier) {
+        supplier.setPhone(PhoneValidator.normalize(supplier.getPhone()));
+        PhoneValidator.check(supplier.getPhone());
         supplierMapper.update(supplier);
     }
 

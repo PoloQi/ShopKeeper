@@ -11,6 +11,13 @@ import PurchaseEdit from './pages/PurchaseEdit'
 import Sale from './pages/Sale'
 import SaleEdit from './pages/SaleEdit'
 import Stock from './pages/Stock'
+import { useAuth } from './context/AuthContext'
+
+function RequireOwner({ children }) {
+  const { user } = useAuth()
+  if (user?.role !== 1) return <Navigate to="/stock" replace />
+  return children
+}
 
 export default function App() {
   return (
@@ -22,13 +29,24 @@ export default function App() {
           <Route path="customer" element={<Customer />} />
           <Route path="supplier" element={<Supplier />} />
           <Route path="product" element={<Product />} />
-          <Route path="user" element={<User />} />
+          <Route
+            path="user"
+            element={(
+              <RequireOwner>
+                <User />
+              </RequireOwner>
+            )}
+          />
           <Route path="purchase" element={<Purchase />} />
           <Route path="purchase/new" element={<PurchaseEdit />} />
           <Route path="purchase/edit/:poNo" element={<PurchaseEdit />} />
+          <Route path="purchase/audit/:poNo" element={<PurchaseEdit />} />
+          <Route path="purchase/view/:poNo" element={<PurchaseEdit />} />
           <Route path="sale" element={<Sale />} />
           <Route path="sale/new" element={<SaleEdit />} />
           <Route path="sale/edit/:soNo" element={<SaleEdit />} />
+          <Route path="sale/audit/:soNo" element={<SaleEdit />} />
+          <Route path="sale/view/:soNo" element={<SaleEdit />} />
           <Route path="stock" element={<Stock />} />
         </Route>
       </Routes>

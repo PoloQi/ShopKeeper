@@ -4,12 +4,12 @@
 <mapper namespace="org.example.shopkeeper_backend.mapper.SysUserMapper">
 
     <sql id="baseColumns">
-        user_id, username, real_name, gender, status
+        user_id, username, real_name, gender, role, status
     </sql>
 
     <!-- 登录查询（含密码密文） -->
     <select id="selectByUsername" resultType="org.example.shopkeeper_backend.entity.SysUser">
-        SELECT user_id, username, password, real_name, gender, status
+        SELECT user_id, username, password, real_name, gender, role, status
         FROM sys_user
         WHERE username = #{username}
     </select>
@@ -23,6 +23,9 @@
             </if>
             <if test="realName != null and realName != ''">
                 AND real_name LIKE CONCAT('%', #{realName}, '%')
+            </if>
+            <if test="role != null">
+                AND role = #{role}
             </if>
             <if test="status != null">
                 AND status = #{status}
@@ -40,6 +43,9 @@
             <if test="realName != null and realName != ''">
                 AND real_name LIKE CONCAT('%', #{realName}, '%')
             </if>
+            <if test="role != null">
+                AND role = #{role}
+            </if>
             <if test="status != null">
                 AND status = #{status}
             </if>
@@ -56,8 +62,8 @@
 
     <insert id="insert" parameterType="org.example.shopkeeper_backend.entity.SysUser"
             useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO sys_user (username, password, real_name, gender, status)
-        VALUES (#{username}, #{password}, #{realName}, #{gender}, #{status})
+        INSERT INTO sys_user (username, password, real_name, gender, role, status)
+        VALUES (#{username}, #{password}, #{realName}, #{gender}, #{role}, #{status})
     </insert>
 
     <update id="update" parameterType="org.example.shopkeeper_backend.entity.SysUser">
@@ -68,6 +74,7 @@
             <if test="password != null and password != ''">password = #{password},</if>
             <if test="realName != null and realName != ''">real_name = #{realName},</if>
             <if test="gender != null and gender != ''">gender = #{gender},</if>
+            <if test="role != null">role = #{role},</if>
             <if test="status != null">status = #{status},</if>
         </set>
         WHERE user_id = #{userId}

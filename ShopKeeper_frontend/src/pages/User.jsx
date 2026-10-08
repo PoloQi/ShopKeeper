@@ -19,7 +19,7 @@ import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import * as userApi from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 
-const emptyQuery = { username: '', realName: '', status: undefined }
+const emptyQuery = { username: '', realName: '', role: undefined, status: undefined }
 
 export default function User() {
   const { user: loginUser } = useAuth()
@@ -67,7 +67,7 @@ export default function User() {
   const openAdd = () => {
     setEditing(null)
     form.resetFields()
-    form.setFieldsValue({ gender: 'M', status: 1 })
+    form.setFieldsValue({ gender: 'M', role: 0, status: 1 })
     setModalOpen(true)
   }
 
@@ -108,6 +108,12 @@ export default function User() {
     { title: '用户编号', dataIndex: 'userId', width: 100 },
     { title: '用户名', dataIndex: 'username', width: 140 },
     { title: '真实姓名', dataIndex: 'realName', width: 140 },
+    {
+      title: '角色',
+      dataIndex: 'role',
+      width: 90,
+      render: (r) => (r === 1 ? <Tag color="gold">店长</Tag> : <Tag>店员</Tag>)
+    },
     {
       title: '性别',
       dataIndex: 'gender',
@@ -150,7 +156,7 @@ export default function User() {
     <div>
       <Card style={{ marginBottom: 16 }} styles={{ body: { paddingBottom: 0 } }}>
         <Row gutter={16}>
-          <Col span={6}>
+          <Col span={5}>
             <Form.Item label="用户名">
               <Input
                 allowClear
@@ -161,7 +167,7 @@ export default function User() {
               />
             </Form.Item>
           </Col>
-          <Col span={5}>
+          <Col span={4}>
             <Form.Item label="真实姓名">
               <Input
                 allowClear
@@ -169,6 +175,20 @@ export default function User() {
                 value={query.realName}
                 onPressEnter={handleSearch}
                 onChange={(e) => setQuery({ ...query, realName: e.target.value })}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={4}>
+            <Form.Item label="角色">
+              <Select
+                allowClear
+                placeholder="全部"
+                value={query.role}
+                onChange={(v) => setQuery({ ...query, role: v })}
+                options={[
+                  { value: 1, label: '店长' },
+                  { value: 0, label: '店员' }
+                ]}
               />
             </Form.Item>
           </Col>
@@ -282,6 +302,12 @@ export default function User() {
               </Form.Item>
             </Col>
           </Row>
+          <Form.Item name="role" label="角色" rules={[{ required: true, message: '请选择角色' }]}>
+            <Radio.Group>
+              <Radio value={1}>店长</Radio>
+              <Radio value={0}>店员</Radio>
+            </Radio.Group>
+          </Form.Item>
           <Form.Item name="status" label="状态" rules={[{ required: true }]}>
             <Select
               options={[

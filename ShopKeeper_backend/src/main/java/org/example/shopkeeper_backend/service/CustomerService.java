@@ -2,6 +2,7 @@ package org.example.shopkeeper_backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.shopkeeper_backend.common.PageResult;
+import org.example.shopkeeper_backend.common.PhoneValidator;
 import org.example.shopkeeper_backend.entity.Customer;
 import org.example.shopkeeper_backend.mapper.CustomerMapper;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,8 @@ public class CustomerService {
 
     /** 新增：自动生成 KH+4位流水 编号，返回编号 */
     public String add(Customer customer) {
+        customer.setPhone(PhoneValidator.normalize(customer.getPhone()));
+        PhoneValidator.check(customer.getPhone());
         String maxId = customerMapper.selectMaxId();
         int seq = maxId == null ? 1 : Integer.parseInt(maxId.substring(2)) + 1;
         customer.setCustomerId(String.format("KH%04d", seq));
@@ -42,6 +45,8 @@ public class CustomerService {
     }
 
     public void update(Customer customer) {
+        customer.setPhone(PhoneValidator.normalize(customer.getPhone()));
+        PhoneValidator.check(customer.getPhone());
         customerMapper.update(customer);
     }
 

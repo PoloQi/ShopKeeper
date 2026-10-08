@@ -16,6 +16,8 @@ import {
 } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import * as supplierApi from '../api/supplierApi'
+import { phonePattern } from '../utils/validators'
+import { useAuth } from '../context/AuthContext'
 
 const emptyQuery = { supplierName: '', phone: '', status: undefined }
 
@@ -33,6 +35,7 @@ export default function Supplier() {
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
   const [form] = Form.useForm()
+  const { user } = useAuth()
 
   const loadData = async () => {
     setLoading(true)
@@ -76,6 +79,8 @@ export default function Supplier() {
 
   const handleOk = async () => {
     const values = await form.validateFields()
+    // 提交前去掉首尾空格，与后端归一一致
+    if (values.phone) values.phone = values.phone.trim()
     setSaving(true)
     try {
       if (editing) {
@@ -116,16 +121,20 @@ export default function Supplier() {
       render: (_, record) => (
         <Space size="middle">
           <a onClick={() => openEdit(record)}>编辑</a>
-          <Popconfirm
-            title="删除确认"
-            description={`确定删除供应商「${record.supplierName}」吗？`}
-            okText="确定删除"
-            cancelText="取消"
-            okButtonProps={{ danger: true }}
-            onConfirm={() => handleDelete(record.supplierId)}
-          >
-            <a style={{ color: 'var(--cinnabar)' }}>删除</a>
-          </Popconfirm>
+          {user.role === 1 ? (
+            <Popconfirm
+              title="删除确认"
+              description={`确定删除供应商「${record.supplierName}」吗？`}
+              okText="确定删除"
+              cancelText="取消"
+              okButtonProps={{ danger: true }}
+              onConfirm={() => handleDelete(record.supplierId)}
+            >
+              <a style={{ color: 'var(--cinnabar)' }}>删除</a>
+            </Popconfirm>
+          ) : (
+            <span style={{ color: '#bbb' }}>删除</span>
+          )}
         </Space>
       )
     }
@@ -245,7 +254,17 @@ export default function Supplier() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="phone" label="联系电话">
+              <Form.Item
+                name="phone"
+                label="联系电话"
+                rules={[
+                  {
+                    pattern: phonePattern,
+                    transform: (v) => (typeof v === 'string' ? v.trim() : v),
+                    message: '请输入11位手机号或带区号的固话'
+                  }
+                ]}
+              >
                 <Input maxLength={20} />
               </Form.Item>
             </Col>

@@ -1,6 +1,7 @@
 package org.example.shopkeeper_backend.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.shopkeeper_backend.common.OwnerOnly;
 import org.example.shopkeeper_backend.common.PageResult;
 import org.example.shopkeeper_backend.common.Result;
 import org.example.shopkeeper_backend.entity.Product;
@@ -58,6 +59,7 @@ public class ProductController {
         return Result.ok();
     }
 
+    @OwnerOnly
     @DeleteMapping("/{productId}")
     public Result<Void> delete(@PathVariable String productId) {
         productService.delete(productId);
